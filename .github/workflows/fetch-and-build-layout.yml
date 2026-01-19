@@ -92,6 +92,11 @@ jobs:
       - name: Build qmk docker image
         run: docker build -t qmk .
 
+      - name: Install community modules
+        run: |
+          # Install getreuer's QMK modules (includes orbital_mouse)
+          git clone --depth 1 https://github.com/getreuer/qmk-modules.git qmk_firmware/modules/getreuer
+
       - name: Build the layout
         id: build-layout
         run: |
