@@ -163,6 +163,11 @@ bool rgb_matrix_indicators_user(void) {
 
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  // Prevent QMK's default mouse keys from processing - let Orbital Mouse handle it exclusively
+  if (IS_MOUSE_KEYCODE(keycode)) {
+    return false;
+  }
+
   switch (keycode) {
   case QK_MODS ... QK_MODS_MAX: 
     // Mouse keys with modifiers work inconsistently across operating systems, this makes sure that modifiers are always
