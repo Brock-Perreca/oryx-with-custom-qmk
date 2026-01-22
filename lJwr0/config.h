@@ -1,4 +1,4 @@
-#define CHORDAL_HOLD
+#define FLOW_TAP_TERM 70
 #define PERMISSIVE_HOLD
 
 #define USB_SUSPEND_WAKEUP_DELAY 0
@@ -8,7 +8,7 @@
 #undef MOUSEKEY_TIME_TO_MAX
 #define MOUSEKEY_TIME_TO_MAX 90
 
-#define SERIAL_NUMBER "lJwr0/OaW6rW"
+#define SERIAL_NUMBER "lJwr0/m5Egz3"
 #define LAYER_STATE_8BIT
 
 #define TAPPING_TERM_PER_KEY
