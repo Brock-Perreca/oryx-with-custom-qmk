@@ -7,12 +7,18 @@
 
 enum custom_keycodes {
   RGB_SLD = ZSA_SAFE_RANGE,
+  DRAG_SCROLL,
+  TOGGLE_SCROLL,
+  NAVIGATOR_INC_CPI,
+  NAVIGATOR_DEC_CPI,
+  NAVIGATOR_TURBO,
+  NAVIGATOR_AIM
 };
 
 
 
-#define DUAL_FUNC_0 LT(2, KC_U)
-#define DUAL_FUNC_1 LT(8, KC_8)
+#define DUAL_FUNC_0 LT(7, KC_F2)
+#define DUAL_FUNC_1 LT(15, KC_F11)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [0] = LAYOUT_voyager(
@@ -49,6 +55,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_TRANSPARENT, KC_KP_SLASH,    KC_MEDIA_PREV_TRACK,KC_MEDIA_NEXT_TRACK,KC_MEDIA_PLAY_PAUSE,KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_MY_COMPUTER, KC_SYSTEM_SLEEP,KC_SYSTEM_POWER,KC_TRANSPARENT, KC_TRANSPARENT, 
     KC_LEFT_SHIFT,  KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
                                                     KC_TRANSPARENT, KC_LEFT_CTRL,                                   KC_TRANSPARENT, KC_TRANSPARENT
+  ),
+  [5] = LAYOUT_voyager(
+    NAVIGATOR_DEC_CPI,NAVIGATOR_INC_CPI,KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, QK_LLCK,                                        KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
+    KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_MS_BTN3,     TOGGLE_SCROLL,                                  KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
+    KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_MS_BTN2,     KC_MS_BTN1,     DRAG_SCROLL,                                    KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
+    KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
+                                                    KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT
   ),
 };
 
@@ -151,6 +164,27 @@ bool rgb_matrix_indicators_user(void) {
   return true;
 }
 
+extern bool set_scrolling;
+extern bool navigator_turbo;
+extern bool navigator_aim;
+void pointing_device_init_user(void) {
+  set_auto_mouse_enable(true);
+}
+
+bool is_mouse_record_user(uint16_t keycode, keyrecord_t* record) {
+  // Treat all keys as mouse keys when in the automouse layer so that any key set resets the timeout without leaving the layer.
+  if (!layer_state_is(AUTO_MOUSE_TARGET_LAYER)){
+    // When depressing a mouse key with a LT key at the same time, the mouse key tracker is not decremented.
+    // This is a workaround to fix that
+    if (IS_MOUSE_KEYCODE(keycode) && !record->event.pressed) {
+      return true;
+    }
+    return false;
+  }
+  else {
+    return false;
+  }
+}
 
 
 
@@ -208,6 +242,43 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }  
       }  
       return false;
+    case DRAG_SCROLL:
+      if (record->event.pressed) {
+        set_scrolling = true;
+      } else {
+        set_scrolling = false;
+      }
+      return false;
+    case TOGGLE_SCROLL:
+      if (record->event.pressed) {
+        set_scrolling = !set_scrolling;
+      }
+      return false;
+    break;
+  case NAVIGATOR_TURBO:
+    if (record->event.pressed) {
+      navigator_turbo = true;
+    } else {
+      navigator_turbo = false;
+    }
+    return false;
+  case NAVIGATOR_AIM:
+    if (record->event.pressed) {
+      navigator_aim = true;
+    } else {
+      navigator_aim = false;
+    }
+    return false;
+  case NAVIGATOR_INC_CPI:
+    if (record->event.pressed) {
+        pointing_device_set_cpi(1);
+    }
+    return false;
+  case NAVIGATOR_DEC_CPI:
+    if (record->event.pressed) {
+        pointing_device_set_cpi(0);
+    }
+    return false;
     case RGB_SLD:
       if (record->event.pressed) {
         rgblight_mode(1);
