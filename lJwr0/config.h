@@ -8,7 +8,7 @@
 #undef MOUSEKEY_TIME_TO_MAX
 #define MOUSEKEY_TIME_TO_MAX 90
 
-#define SERIAL_NUMBER "lJwr0/OaWnNy"
+#define SERIAL_NUMBER "lJwr0/x9PYGK"
 #define LAYER_STATE_8BIT
 
 #define TAPPING_TERM_PER_KEY

@@ -17,8 +17,9 @@ enum custom_keycodes {
 
 
 
-#define DUAL_FUNC_0 LT(7, KC_F24)
-#define DUAL_FUNC_1 LT(7, KC_K)
+#define DUAL_FUNC_0 LT(9, KC_U)
+#define DUAL_FUNC_1 LT(1, KC_F22)
+#define DUAL_FUNC_2 LT(12, KC_F)
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [0] = LAYOUT_voyager(
@@ -31,14 +32,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [1] = LAYOUT_voyager(
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, QK_LLCK,        
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
-    KC_TRANSPARENT, KC_A,           KC_S,           KC_D,           KC_F,           KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_J,           KC_K,           KC_L,           KC_SCLN,        KC_QUOTE,       
-    KC_LEFT_SHIFT,  KC_Z,           KC_X,           KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_SLASH,       KC_TRANSPARENT, 
-                                                    KC_SPACE,       KC_LEFT_CTRL,                                   KC_TRANSPARENT, LT(2, KC_ENTER)
+    KC_LEFT_SHIFT,  KC_A,           KC_S,           KC_D,           KC_F,           KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_J,           KC_K,           KC_L,           KC_SCLN,        KC_QUOTE,       
+    DUAL_FUNC_0,    KC_Z,           KC_X,           KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_SLASH,       KC_TRANSPARENT, 
+                                                    KC_SPACE,       KC_BSPC,                                        KC_TRANSPARENT, LT(2, KC_ENTER)
   ),
   [2] = LAYOUT_voyager(
     KC_ESCAPE,      KC_F1,          KC_F2,          KC_F3,          KC_F4,          KC_F5,                                          KC_F6,          KC_F7,          KC_F8,          KC_F9,          KC_F10,         QK_LLCK,        
     KC_GRAVE,       KC_HASH,        KC_AT,          KC_DLR,         KC_LCBR,        KC_RCBR,                                        KC_LABK,        KC_7,           KC_8,           KC_9,           KC_SLASH,       KC_F11,         
-    KC_TRANSPARENT, DUAL_FUNC_0,    MT(MOD_LCTL, KC_MINUS),MT(MOD_LSFT, KC_EQUAL),KC_LPRN,        KC_RPRN,                                        KC_RABK,        KC_4,           MT(MOD_RSFT, KC_5),MT(MOD_RCTL, KC_6),DUAL_FUNC_1,    KC_F12,         
+    KC_TRANSPARENT, DUAL_FUNC_1,    MT(MOD_LCTL, KC_MINUS),MT(MOD_LSFT, KC_EQUAL),KC_LPRN,        KC_RPRN,                                        KC_RABK,        KC_4,           MT(MOD_RSFT, KC_5),MT(MOD_RCTL, KC_6),DUAL_FUNC_2,    KC_F12,         
     KC_TRANSPARENT, KC_PERC,        KC_CIRC,        KC_AMPR,        KC_LBRC,        KC_RBRC,                                        KC_0,           KC_1,           KC_2,           KC_3,           KC_DOT,         KC_TRANSPARENT, 
                                                     KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_0,           KC_TRANSPARENT
   ),
@@ -72,13 +73,13 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
             return TAPPING_TERM + 50;
         case KC_SLASH:
             return TAPPING_TERM + 50;
-        case DUAL_FUNC_0:
+        case DUAL_FUNC_1:
             return TAPPING_TERM + 50;
         case MT(MOD_LCTL, KC_MINUS):
             return TAPPING_TERM + 50;
         case MT(MOD_RCTL, KC_6):
             return TAPPING_TERM + 50;
-        case DUAL_FUNC_1:
+        case DUAL_FUNC_2:
             return TAPPING_TERM + 50;
         default:
             return TAPPING_TERM;
@@ -175,7 +176,7 @@ bool is_mouse_record_user(uint16_t keycode, keyrecord_t* record) {
     return false;
   }
   else {
-    return false;
+    return true;
   }
 }
 
@@ -184,11 +185,11 @@ bool is_mouse_record_user(uint16_t keycode, keyrecord_t* record) {
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
-  case QK_MODS ... QK_MODS_MAX: 
-    // Mouse keys with modifiers work inconsistently across operating systems, this makes sure that modifiers are always
-    // applied to the mouse key that was pressed.
-    if (IS_MOUSE_KEYCODE(QK_MODS_GET_BASIC_KEYCODE(keycode))) {
-    if (record->event.pressed) {
+  case QK_MODS ... QK_MODS_MAX:
+    // Mouse and consumer keys (volume, media) with modifiers work inconsistently across operating systems,
+    // this makes sure that modifiers are always applied to the key that was pressed.
+    if (IS_MOUSE_KEYCODE(QK_MODS_GET_BASIC_KEYCODE(keycode)) || IS_CONSUMER_KEYCODE(QK_MODS_GET_BASIC_KEYCODE(keycode))) {
+      if (record->event.pressed) {
         add_mods(QK_MODS_GET_MODS(keycode));
         send_keyboard_report();
         wait_ms(2);
@@ -202,6 +203,21 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     break;
 
     case DUAL_FUNC_0:
+      if (record->tap.count > 0) {
+        if (record->event.pressed) {
+          register_code16(KC_LEFT_SHIFT);
+        } else {
+          unregister_code16(KC_LEFT_SHIFT);
+        }
+      } else {
+        if (record->event.pressed) {
+          register_code16(KC_LEFT_CTRL);
+        } else {
+          unregister_code16(KC_LEFT_CTRL);
+        }  
+      }  
+      return false;
+    case DUAL_FUNC_1:
       if (record->tap.count > 0) {
         if (record->event.pressed) {
           register_code16(KC_EXLM);
@@ -218,7 +234,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }  
       }  
       return false;
-    case DUAL_FUNC_1:
+    case DUAL_FUNC_2:
       if (record->tap.count > 0) {
         if (record->event.pressed) {
           register_code16(KC_ASTR);
