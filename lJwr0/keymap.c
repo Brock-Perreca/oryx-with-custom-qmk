@@ -185,6 +185,30 @@ bool is_mouse_record_user(uint16_t keycode, keyrecord_t* record) {
 
 
 
+// Override Caps Word to keep it active on KC_SCLN.
+// The keyboard sends QWERTY keycodes, but Windows remaps to Colemak.
+// In Colemak, QWERTY ';' becomes 'O', so KC_SCLN should behave like a letter.
+bool caps_word_press_user(uint16_t keycode) {
+    switch (keycode) {
+        // Keycodes that continue Caps Word, with shift applied.
+        case KC_A ... KC_Z:
+        case KC_MINS:
+        case KC_SCLN:  // QWERTY ';' is Colemak 'O'
+            add_weak_mods(MOD_BIT(KC_LSFT));
+            return true;
+
+        // Keycodes that continue Caps Word, without shifting.
+        case KC_1 ... KC_0:
+        case KC_BSPC:
+        case KC_DEL:
+        case KC_UNDS:
+            return true;
+
+        default:
+            return false;
+    }
+}
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   // Prevent QMK's default mouse keys from processing - let Orbital Mouse handle it exclusively
   if (IS_MOUSE_KEYCODE(keycode)) {
